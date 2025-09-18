@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
-import { WebhookVerificationDto, WebhookVerificationResponseDto } from "../dto/webhookVerification.dto";
+import { WebhookMessageDto, WebhookVerificationDto, WebhookVerificationResponseDto } from "../dto/webhookVerification.dto";
 import { APP_CONFIG } from "../config/app.config";
+import { MessageService } from "./message.service";
 
 export class WebhookService {
 
     private static instance : WebhookService;
+    private messageService: MessageService;
+
 
     public static getInstance() : WebhookService {
         if(!WebhookService.instance) {
@@ -13,7 +16,9 @@ export class WebhookService {
         return WebhookService.instance;
     }
 
-    private constructor() {}
+    private constructor() {
+        this.messageService = MessageService.getInstance();
+    }
 
     public handleWebhookVerification(data: WebhookVerificationDto): WebhookVerificationResponseDto {
         const password = APP_CONFIG.WEBHOOK_VERIFICATION_PASSWORD;
@@ -30,7 +35,20 @@ export class WebhookService {
         };
     }
 
-    public handleWebhook(req: Request, res: Response) {
-}
+    public async handleReceivedMessage(data: WebhookMessageDto): Promise<boolean> {
+        const message = data.entry[0].changes[0].value.messages[0].text.body;
+        const phoneNumber = data.entry[0].changes[0].value.contacts[0].wa_id;
+        const name = data.entry[0].changes[0].value.contacts[0].profile.name;
+
+        const replyMessage = `Hello ${name}, you said: ${message}`;
+
+        const isReplied = await this.messageService.sendMessage(phoneNumber, replyMessage);
+
+        if(isReplied){
+            return true;
+        }
+
+        return false; // Placeholder return value
+    }
 
 }

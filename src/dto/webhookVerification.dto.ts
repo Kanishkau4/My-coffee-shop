@@ -41,6 +41,8 @@ export interface WebhookMessageDto {
                             };
                         }
                     ];
+                    errors: []
+                    statuses: []
                 };
                 field: string;
             }
