@@ -42,7 +42,11 @@ export interface WebhookMessageDto {
                         }
                     ];
                     errors: []
-                    statuses: []
+                    statuses: [
+                        {
+                            status: string;
+                        }
+                    ]
                 };
                 field: string;
             }

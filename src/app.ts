@@ -9,9 +9,15 @@ const messageController = new MessageController();
 const webhookController = new WebhookController();
 
 
-app.post("/send-message", messageController.sentMessage);
+// app.post("/send-message", messageController.sentMessage);
+
+//to verify webhook
 app.get("/webhook", webhookController.webhook);
+
+//to receive message
 app.post("/webhook", webhookController.webhookMessage);
+
+//health check
 app.get("/health", (req, res) => {
     res.send("Server is healthy");
 });
