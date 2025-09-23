@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { APP_CONFIG } from "../config/app.config";
+import { IMessageHistory } from "../dto/messageHistory.dto";
 
 export class GeminiService {
 
@@ -20,11 +21,14 @@ export class GeminiService {
         this.gemini = new GoogleGenAI({});
     }
 
-    public async generateResponse(message: string): Promise<string> {
+    public async generateResponse(message: string , history: IMessageHistory[]): Promise<string> {
         try {
-            const response = await this.gemini.models.generateContent({
+            const chat = await this.gemini.chats.create({
                 model: "gemini-2.5-flash",
-                contents: message,
+                history: history,
+            });
+            const response = await chat.sendMessage({
+                message: "" + message,
             });
             return response.text || "Sorry, I couldn't generate a response.";
 

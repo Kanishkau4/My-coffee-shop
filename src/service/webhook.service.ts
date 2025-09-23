@@ -3,6 +3,7 @@ import { WebhookMessageDto, WebhookVerificationDto, WebhookVerificationResponseD
 import { APP_CONFIG } from "../config/app.config";
 import { MessageService } from "./message.service";
 import { GeminiService } from "./gemini.service";
+import { IMessage, Role } from "../model/message.model";
 
 export class WebhookService {
 
@@ -43,7 +44,7 @@ export class WebhookService {
         const status = data.entry[0].changes[0].value.statuses;
         if (status !== undefined && status.length > 0) {
             console.log('status: ', status[0].status);
-            return false;
+            return true;
         }
 
         try {
@@ -62,10 +63,30 @@ export class WebhookService {
             const phoneNumber = data.entry[0].changes[0].value.contacts[0].wa_id;
             const name = data.entry[0].changes[0].value.contacts[0].profile.name;
 
+            //retrieve last 5 messages from this user from database
+            const history = await this.messageService.getMessagebyUserId(phoneNumber);
+
+            const replyMessage = await this.geminiService.generateResponse(message, history);
+
+
+            //store the received message in database
+            const newMessage: IMessage = {
+                userId: phoneNumber,
+                role: Role.USER,
+                content: message
+            };
+
+            const newReplyMessage: IMessage = {
+                userId: phoneNumber,
+                role: Role.MODEL,
+                content: replyMessage // Placeholder, will be updated after getting response from Gemini
+            };
+
+            await this.messageService.bulkCreateMessages([newMessage, newReplyMessage]);
+
             // const replyMessage = `Hello ${name}, you said: ${message}`;
             //get response from Gemini AI model
-            const replyMessage = await this.geminiService.generateResponse(message);
-
+            
             const isReplied = await this.messageService.sendMessage(phoneNumber, replyMessage);
 
             if (isReplied) {

@@ -1,9 +1,13 @@
 import axios from "axios";
 import { APP_CONFIG } from "../config/app.config";
+import { MessageDao } from "../dao/message.dao";
+import { IMessageHistory } from "../dto/messageHistory.dto";
+import { IMessage } from "../model/message.model";
 
 export class MessageService {
 
     private static instance : MessageService;
+    private messageDao: MessageDao;
 
     public static getInstance() : MessageService {
         if(!MessageService.instance) {
@@ -12,7 +16,9 @@ export class MessageService {
         return MessageService.instance;
     }
 
-    private constructor() {}
+    private constructor() {
+        this.messageDao = MessageDao.getInstance();
+    }
 
     public async sendMessage(phoneNumber: string, message: string) {
         // Logic to send message via WhatsApp API
@@ -41,7 +47,7 @@ export class MessageService {
     try {
         const response = await axios.request(config)
 
-    if (response.status !== 200) {
+    if (response.status === 200) {
         console.log('reply sent to ', phoneNumber);
         return true;
     }
@@ -52,4 +58,30 @@ export class MessageService {
         
     }
 
+    public async getMessagebyUserId(userId: string): Promise<IMessageHistory[]> {
+        try {
+        const messages = await this.messageDao.getMessagesByUserId(userId);
+        const history: IMessageHistory[] = messages.map((message) => {
+            return {
+                role: message.role,
+                parts: [{ text: message.content }]
+            };
+        });
+        return history;
+    }
+    catch (error) {
+        console.error("Error in getMessagebyUserId:", error);
+        throw error;
+    }
+    }
+
+    public async bulkCreateMessages(messages: IMessage[]): Promise<IMessage[]> {
+        try {
+            await this.messageDao.bulkCreateMessages(messages);
+        } catch (error) {
+            console.error("Error in bulkCreateMessages:", error);
+            throw error;
+        }
+        return messages;
+    }
 }
