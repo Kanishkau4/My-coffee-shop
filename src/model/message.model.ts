@@ -1,5 +1,3 @@
-import { create } from "domain";
-import e from "express";
 import mongoose from "mongoose";
 
 export enum Role {
@@ -8,7 +6,7 @@ export enum Role {
 }
 
 export interface IMessage {
-    userId: string;
+    _id: string;
     role: Role;
     content: string;
     createdAt?: Date;
