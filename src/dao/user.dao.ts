@@ -19,7 +19,15 @@ export class UserDao{
             // createUser.save();
             return createUser.toJSON() as IUser;
         } catch (error) { 
-            console.log("Error in createUser:", error);
+            throw error;
+        }
+    }
+
+    public async getUserByEmail(email: string): Promise<IUser> { 
+        try { 
+            return await User.findOne({ email }).lean().exec() as IUser;
+        } catch (error) { 
+            console.log(error);
             throw error;
         }
     }

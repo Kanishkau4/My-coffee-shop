@@ -29,7 +29,7 @@ app.get("/health", (req, res) => {
     res.send("Server is healthy");
 });
 
-mongoose.connect(APP_CONFIG.MONGO_URI).then(() => {
+mongoose.connect(APP_CONFIG.MONGO_URI).then((mongoose) => {
     console.log("Connected to MongoDB");
     app.listen(APP_CONFIG.PORT, () => {
         console.log(`Server is running on port ${APP_CONFIG.PORT}`);
