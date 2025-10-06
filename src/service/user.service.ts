@@ -40,4 +40,14 @@ export class UserService {
     }
   }
 
+  public async updateUser(id: string, user: Partial<IUser>): Promise<IUser> {
+    try {
+      const updatedUser = await this.userDao.updateUser(id, user);
+      return updatedUser;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
 }

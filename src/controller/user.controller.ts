@@ -4,6 +4,7 @@ import { UserService } from "../service/user.service";
 import { AuthService } from "../service/auth.service";
 import { LoginDTO } from "../dto/login/login.dto";
 import { ERRORS } from "../constants/errors.constants";
+import { AuthRequest } from "../middleware/auth.middleware";
 
 export class UserController {
     private userService: UserService;
@@ -18,13 +19,10 @@ export class UserController {
         res.status(200).json({ message: "Hello World" });
     }
 
-    getCurrentUser = async (req: Request, res: Response) => { 
+    getCurrentUser = async (req: AuthRequest, res: Response) => { 
         try { 
-            const token = req.headers.authorization;
-            const decoded = await this.authService.verifyToken(token as string);
-            const user = await this.userService.getUserById(decoded.id);
-            console.log(user);
-            res.status(200).json(user);
+            console.log(req.user);
+            res.status(200).json(req.user);
         } catch (error: any) {
             if (error.message === ERRORS.INVALID_TOKEN) { 
                 res.status(401).json({ message: "Invalid token" });
@@ -35,5 +33,24 @@ export class UserController {
             }
         }
     }
+
+    updateUser = async (req: AuthRequest, res: Response) => { 
+        const user = req.user;
+        const { name, phoneNumber } = req.body;
+        if (!user || !(name || phoneNumber)) { 
+            res.status(400).json({ message: "Name and phone number are required" });
+            return; 
+        }
+        try { 
+            const updatedUser = await this.userService.updateUser(user._id as string, { name, phoneNumber });
+            res.status(200).json(updatedUser);
+        } catch (error: any) { 
+            if (error.message === ERRORS.USER_NOT_FOUND) { 
+                res.status(404).json({ message: error.message });
+            } else { 
+                res.status(500).json({ message: error.message });
+            }
+        }
+    };
     
 };
