@@ -30,4 +30,14 @@ export class UserService {
     }
   }
 
+  public async getUserById(id: string): Promise<IUser> {
+    try {
+      const user = await this.userDao.getUserById(id);
+      return user;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
 }
